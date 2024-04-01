@@ -1,15 +1,11 @@
 import express from 'express'
 import * as dotenv from 'dotenv'
 import cors from 'cors'
-import { Configuration, OpenAIApi } from 'openai'
+import OpenAI from 'openai';
 
 dotenv.config()
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const app = express()
 app.use(cors())
@@ -25,8 +21,8 @@ app.post('/', async (req, res) => {
   try {
     const prompt = req.body.prompt;
 
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
+    const response = await openai.completions.create({
+      model: "gpt-3.5-turbo-instruct", // The engine to use for completion. you can use any model from the models list https://beta.openai.com/docs/api-reference/completions/create
       prompt: `${prompt}`,
       temperature: 0, // Higher values means the model will take more risks.
       max_tokens: 3000, // The maximum number of tokens to generate in the completion. Most models have a context length of 2048 tokens (except for the newest models, which support 4096).
@@ -35,8 +31,10 @@ app.post('/', async (req, res) => {
       presence_penalty: 0, // Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
     });
 
+    console.log()
+
     res.status(200).send({
-      bot: response.data.choices[0].text
+      bot: response.choices[0].text
     });
 
   } catch (error) {
